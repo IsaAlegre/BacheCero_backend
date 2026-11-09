@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: bachecero
+      POSTGRES_PASSWORD: bachecero
+      POSTGRES_DB: bachecero
+    ports:
+      - "5432:5432"
+    volumes:
+      # Volumen con nombre: los datos sobreviven a docker compose down.
+      - datos_db:/var/lib/postgresql/data
+
+  # Microservicio de IA: clonar bache-cero-ia al lado de este repo.
+  # Pesa ~2,5 GB por PyTorch; la primera construcción tarda.
+  ia:
+    build: ../bache-cero-ia
+    ports:
+      - "8000:8000"
+
+volumes:
+  datos_db:

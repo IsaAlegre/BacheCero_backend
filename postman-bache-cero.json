@@ -1,0 +1,73 @@
+{
+  "info": {
+    "name": "Bache Cero (backend)",
+    "description": "Flujo básico: registro, login, reporte con foto y listado de tickets. Antes de ejecutar, crear la variable baseUrl si el servidor no está en localhost:3000.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Registro de ciudadano",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/registro",
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Isabella Prueba\",\n  \"dni\": \"30111333\",\n  \"password\": \"clave-segura-1\"\n}" }
+      }
+    },
+    {
+      "name": "2. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const datos = pm.response.json();",
+              "if (datos.accessToken) pm.collectionVariables.set('token', datos.accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"30111333\",\n  \"password\": \"clave-segura-1\"\n}" }
+      }
+    },
+    {
+      "name": "3. Crear reporte con foto",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/reportes",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "foto", "type": "file", "src": [] },
+            { "key": "lat", "value": "-27.3671", "type": "text" },
+            { "key": "lng", "value": "-55.8960", "type": "text" },
+            { "key": "descripcion", "value": "Bache en la esquina", "type": "text" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Listar tickets abiertos",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/tickets?pagina=1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tickets"],
+          "query": [{ "key": "pagina", "value": "1" }]
+        }
+      }
+    }
+  ]
+}
