@@ -71,13 +71,20 @@ export class IniciarSesion {
     private readonly tokens: PuertoTokens,
   ) {}
 
-  async ejecutar(dni: string, password: string): Promise<{ accessToken: string }> {
+  async ejecutar(
+    dni: string,
+    password: string,
+  ): Promise<{ accessToken: string; rol: string; nombre: string }> {
     const usuario = await this.usuarios.buscarPorDni(dni);
     // Misma respuesta si el DNI no existe o la contraseña no coincide.
     if (!usuario || !(await this.hash.comparar(password, usuario.passwordHash))) {
       throw new ErrorCredenciales();
     }
-    return { accessToken: this.tokens.firmar(usuario.id, usuario.rol) };
+    return {
+      accessToken: this.tokens.firmar(usuario.id, usuario.rol),
+      rol: usuario.rol,
+      nombre: usuario.nombre,
+    };
   }
 }
 
