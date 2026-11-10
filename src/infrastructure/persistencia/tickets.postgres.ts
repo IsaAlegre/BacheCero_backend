@@ -53,7 +53,6 @@ export class TicketsPostgres implements PuertoTickets {
       necesitaRevision: fila.necesita_revision,
     };
   }
-
   async crear(t: NuevoTicket): Promise<number> {
     const filas: Array<{ id: string }> = await this.db.query(
       `INSERT INTO tickets
@@ -66,7 +65,7 @@ export class TicketsPostgres implements PuertoTickets {
          (SELECT id FROM estados WHERE codigo = 'pendiente'),
          (SELECT id FROM jerarquias_calle WHERE osm_highway = $5),
          (SELECT id FROM barrios WHERE nombre = $6),
-         $7, $8, $9)
+         $7, $8, $9, $10)
        RETURNING id`,
       [
         t.lat,
@@ -74,6 +73,7 @@ export class TicketsPostgres implements PuertoTickets {
         t.tipo,
         t.gravedad,
         t.osmHighway,
+        t.barrio,
         t.barrio,
         t.calle,
         t.prioridad,
