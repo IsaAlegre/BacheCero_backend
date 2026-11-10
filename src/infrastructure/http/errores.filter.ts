@@ -1,6 +1,11 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import type { Response } from 'express';
-import { ErrorEntradaInvalida, ErrorImagenInvalida, ErrorNoEncontrado, ErrorOperacionInvalida } from '../../application/errores';
+import {
+  ErrorEntradaInvalida,
+  ErrorImagenInvalida,
+  ErrorNoEncontrado,
+  ErrorOperacionInvalida,
+} from '../../application/errores';
 import { ErrorCredenciales, ErrorDniYaRegistrado } from '../../application/usuarios';
 
 @Catch()
@@ -9,7 +14,13 @@ export class ErroresAplicacionFilter implements ExceptionFilter {
     const res = host.switchToHttp().getResponse<Response>();
 
     if (error instanceof HttpException) {
-      res.status(error.getStatus()).json(error.getResponse());
+      const status = error.getStatus();
+      const cuerpo = error.getResponse();
+      const msg = typeof cuerpo === 'string' ? cuerpo : (cuerpo as { message?: string | string[] }).message;
+      res.status(status).json({
+        statusCode: status,
+        mensaje: Array.isArray(msg) ? msg.join('. ') : msg,
+      });
       return;
     }
 
