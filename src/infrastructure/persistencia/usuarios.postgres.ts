@@ -22,8 +22,9 @@ export class UsuariosPostgres implements PuertoUsuarios {
     }
   }
 
+
   async cambiarRol(id: number, rol: string): Promise<boolean> {
-    const filas: Array<{ id: string }> = await this.db.query(
+    const [filas] = await this.db.query(
       `UPDATE usuarios SET rol_id = (SELECT id FROM roles WHERE codigo = $2) WHERE id = $1 RETURNING id`,
       [id, rol],
     );

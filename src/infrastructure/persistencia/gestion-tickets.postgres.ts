@@ -94,13 +94,14 @@ export class GestionTicketsPostgres implements PuertoGestionTickets {
 
   cambiarEstado(ticketId: number, estadoAnterior: string, estadoNuevo: string, usuarioId: number): Promise<boolean> {
     return this.db.transaction(async (m) => {
-      const actualizados: unknown[] = await m.query(
+      const [filas] = await m.query(
         `UPDATE tickets SET estado_id = (SELECT id FROM estados WHERE codigo = $2), actualizado_en = now()
           WHERE id = $1 AND estado_id = (SELECT id FROM estados WHERE codigo = $3)
           RETURNING id`,
         [ticketId, estadoNuevo, estadoAnterior],
       );
-      if (actualizados.length === 0) return false;
+      if (filas.length === 0) return false;
+
       await m.query(
         `INSERT INTO historial_estados (ticket_id, estado_anterior_id, estado_nuevo_id, usuario_id)
          VALUES ($1,
@@ -114,7 +115,7 @@ export class GestionTicketsPostgres implements PuertoGestionTickets {
   }
 
   async registrarRevision(ticketId: number, decision: string, usuarioId: number): Promise<boolean> {
-    const actualizados: unknown[] = await this.db.query(
+    const [filas] = await this.db.query(
       `UPDATE tickets
           SET necesita_revision = false, revision_decision = $2, revisado_por_id = $3,
               revisado_en = now(), actualizado_en = now()
@@ -122,6 +123,6 @@ export class GestionTicketsPostgres implements PuertoGestionTickets {
         RETURNING id`,
       [ticketId, decision, usuarioId],
     );
-    return actualizados.length > 0;
+    return filas.length > 0;
   }
 }
