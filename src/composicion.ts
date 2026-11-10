@@ -19,6 +19,9 @@ import { UbicacionNominatim } from './infrastructure/geo/ubicacion-nominatim.ada
 import { UbicacionFalsa } from './infrastructure/geo/ubicacion-falsa.adapter';
 import { ListarMisReportes } from './application/mis-reportes';
 import { ConsultasReportesPostgres } from './infrastructure/persistencia/consultas-reportes.postgres';
+import { ObtenerEstadisticas } from './application/estadisticas';
+import { ConsultasEstadisticasPostgres } from './infrastructure/persistencia/consultas-estadisticas.postgres';
+import { CasosNovedades, construirNovedades } from './composicion-novedades';
 
 export const CASOS = Symbol('CASOS');
 
@@ -33,6 +36,8 @@ export interface Casos {
   readonly asignarRol: AsignarRol;
   readonly tokens: TokensJwt;
   readonly misReportes: ListarMisReportes;
+  readonly estadisticas: ObtenerEstadisticas;
+  readonly novedades: CasosNovedades;
 }
 
 // Único lugar donde se eligen los adaptadores concretos.
@@ -83,10 +88,12 @@ export function construirCasos(env: NodeJS.ProcessEnv = process.env): Casos {
     registrarReporte: new RegistrarReporte({ ia, imagenes, ubicaciones, catalogos, barrios: catalogos, tickets }),
     listarTickets: new ListarTickets(new ConsultasTicketsPostgres(dataSource)),
     misReportes: new ListarMisReportes(new ConsultasReportesPostgres(dataSource)),
+    estadisticas: new ObtenerEstadisticas(new ConsultasEstadisticasPostgres(dataSource)),
     verTicket: new VerDetalleTicket(gestion),
     cambiarEstadoTicket: new CambiarEstadoTicket(gestion),
     resolverRevision: new ResolverRevision(gestion),
     asignarRol: new AsignarRol(usuarios),
+    novedades: construirNovedades(dataSource, env),
     tokens,
   };
 }
