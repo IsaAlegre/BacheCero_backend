@@ -9,10 +9,17 @@ import { ErroresAplicacionFilter } from './infrastructure/http/errores.filter';
 async function main(): Promise<void> {
   await dataSource.initialize();
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new ErroresAplicacionFilter());
+
   const puerto = Number(process.env.PORT ?? 3000);
   await app.listen(puerto);
+  
   console.log(`Bache Cero escuchando en el puerto ${puerto}`);
 }
 
